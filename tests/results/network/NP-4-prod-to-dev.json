@@ -1,0 +1,9 @@
+{
+  "id": "NP-4-prod-to-dev",
+  "description": "cross-env deny: prod-frontend → dev-api",
+  "expected": "DENY",
+  "actual": "DENY",
+  "pass": true,
+  "details": "prod-frontend/frontend → api.dev-api.svc.cluster.local:80/http",
+  "timestamp": "2026-05-21T11:56:52Z"
+}

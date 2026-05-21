@@ -1,0 +1,9 @@
+{
+  "id": "NP-3-test",
+  "description": "api → data allowed (test)",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "test-api/api → data.test-data.svc.cluster.local:6379/tcp",
+  "timestamp": "2026-05-21T11:56:21Z"
+}

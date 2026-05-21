@@ -1,0 +1,9 @@
+{
+  "id": "NP-5-prod",
+  "description": "DNS works in prod-data",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "prod-data/data → kubernetes.default.svc.cluster.local:443/dns",
+  "timestamp": "2026-05-21T11:57:06Z"
+}

@@ -2,3 +2,12 @@
 *.kubeconfig
 kubeconfig*
 tests/results/local-*
+
+# OpenClaw workspace artifacts that leaked into this clone
+.openclaw/
+AGENTS.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md

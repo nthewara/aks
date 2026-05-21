@@ -1,0 +1,9 @@
+{
+  "id": "NP-3-dev",
+  "description": "api → data allowed (dev)",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "dev-api/api → data.dev-data.svc.cluster.local:6379/tcp",
+  "timestamp": "2026-05-21T11:56:14Z"
+}

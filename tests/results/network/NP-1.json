@@ -1,0 +1,9 @@
+{
+  "id": "NP-1",
+  "description": "default-deny: dev-frontend → dev-data:6379 has no allow → DENY",
+  "expected": "DENY",
+  "actual": "DENY",
+  "pass": true,
+  "details": "dev-frontend/frontend → data.dev-data.svc.cluster.local:6379/tcp",
+  "timestamp": "2026-05-21T11:55:46Z"
+}

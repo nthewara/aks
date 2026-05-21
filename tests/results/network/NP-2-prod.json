@@ -1,0 +1,9 @@
+{
+  "id": "NP-2-prod",
+  "description": "frontend → api allowed (prod)",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "prod-frontend/frontend → api.prod-api.svc.cluster.local:80/http",
+  "timestamp": "2026-05-21T11:56:07Z"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "NP-3-prod",
+  "description": "api → data allowed (prod)",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "prod-api/api → data.prod-data.svc.cluster.local:6379/tcp",
+  "timestamp": "2026-05-21T11:56:28Z"
+}
