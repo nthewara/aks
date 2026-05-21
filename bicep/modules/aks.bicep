@@ -12,7 +12,7 @@ param logAnalyticsWorkspaceId string
 param adminGroupObjectIDs array
 
 @description('Kubernetes version, e.g. 1.30.6')
-param kubernetesVersion string = '1.30'
+param kubernetesVersion string = '1.34'
 
 @description('Node count for system pool')
 param nodeCount int = 2
