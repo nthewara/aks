@@ -1,101 +1,80 @@
-# NP-3 — Allow api → data on TCP/6379 within the SAME environment.
-# Same shape as NP-2: egress half on api side, ingress half on data side.
+# NP-3: Allow api → data on TCP/6379, scoped to the SAME environment.
 ---
-# === dev ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-3-api-egress, namespace: dev-api }
+metadata: { name: np-3-api-to-data, namespace: dev-data }
 spec:
-  description: "dev-api → dev-data TCP/6379"
-  endpointSelector:
-    matchLabels: { app: api, environment: dev }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: data
-            environment: dev
-            k8s:io.kubernetes.pod.namespace: dev-data
-      toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-3-data-ingress, namespace: dev-data }
-spec:
-  description: "dev-data ← dev-api TCP/6379"
-  endpointSelector:
-    matchLabels: { app: data, environment: dev }
+  endpointSelector: { matchLabels: { app: data } }
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: api
-            environment: dev
-            k8s:io.kubernetes.pod.namespace: dev-api
+            io.kubernetes.pod.namespace: dev-api
       toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
+        - ports: [ { port: "6379", protocol: TCP } ]
 ---
-# === test ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-3-api-egress, namespace: test-api }
+metadata: { name: np-3-api-to-data, namespace: test-data }
 spec:
-  description: "test-api → test-data TCP/6379"
-  endpointSelector:
-    matchLabels: { app: api, environment: test }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: data
-            environment: test
-            k8s:io.kubernetes.pod.namespace: test-data
-      toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-3-data-ingress, namespace: test-data }
-spec:
-  description: "test-data ← test-api TCP/6379"
-  endpointSelector:
-    matchLabels: { app: data, environment: test }
+  endpointSelector: { matchLabels: { app: data } }
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: api
-            environment: test
-            k8s:io.kubernetes.pod.namespace: test-api
+            io.kubernetes.pod.namespace: test-api
       toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
+        - ports: [ { port: "6379", protocol: TCP } ]
 ---
-# === prod ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-3-api-egress, namespace: prod-api }
+metadata: { name: np-3-api-to-data, namespace: prod-data }
 spec:
-  description: "prod-api → prod-data TCP/6379"
-  endpointSelector:
-    matchLabels: { app: api, environment: prod }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: data
-            environment: prod
-            k8s:io.kubernetes.pod.namespace: prod-data
-      toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-3-data-ingress, namespace: prod-data }
-spec:
-  description: "prod-data ← prod-api TCP/6379"
-  endpointSelector:
-    matchLabels: { app: data, environment: prod }
+  endpointSelector: { matchLabels: { app: data } }
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: api
-            environment: prod
-            k8s:io.kubernetes.pod.namespace: prod-api
+            io.kubernetes.pod.namespace: prod-api
       toPorts:
-        - ports: [{ port: "6379", protocol: TCP }]
+        - ports: [ { port: "6379", protocol: TCP } ]
+---
+# Egress permits on the api side
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata: { name: np-3-api-egress-data, namespace: dev-api }
+spec:
+  endpointSelector: { matchLabels: { app: api } }
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: data
+            io.kubernetes.pod.namespace: dev-data
+      toPorts:
+        - ports: [ { port: "6379", protocol: TCP } ]
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata: { name: np-3-api-egress-data, namespace: test-api }
+spec:
+  endpointSelector: { matchLabels: { app: api } }
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: data
+            io.kubernetes.pod.namespace: test-data
+      toPorts:
+        - ports: [ { port: "6379", protocol: TCP } ]
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata: { name: np-3-api-egress-data, namespace: prod-api }
+spec:
+  endpointSelector: { matchLabels: { app: api } }
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: data
+            io.kubernetes.pod.namespace: prod-data
+      toPorts:
+        - ports: [ { port: "6379", protocol: TCP } ]

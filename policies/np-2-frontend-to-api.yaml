@@ -1,104 +1,112 @@
-# NP-2 — Allow frontend → api on TCP/80 within the SAME environment.
-# Two halves per env:
-#   • egress on the frontend pods → api in same env
-#   • ingress on the api pods   ← frontend in same env
-# Three envs × 2 halves = 6 CiliumNetworkPolicies.
+# NP-2: Allow frontend → api on TCP/80, scoped to the SAME environment.
+# Three CNPs (one per env) — Cilium endpointSelector matches the api pod by label,
+# fromEndpoints matches the frontend pod that's also in the same env namespace.
 ---
-# === dev ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-2-frontend-egress, namespace: dev-frontend }
+metadata:
+  name: np-2-frontend-to-api
+  namespace: dev-api
 spec:
-  description: "dev-frontend → dev-api TCP/80"
   endpointSelector:
-    matchLabels: { app: frontend, environment: dev }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: api
-            environment: dev
-            k8s:io.kubernetes.pod.namespace: dev-api
-      toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-2-api-ingress, namespace: dev-api }
-spec:
-  description: "dev-api ← dev-frontend TCP/80"
-  endpointSelector:
-    matchLabels: { app: api, environment: dev }
+    matchLabels:
+      app: api
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: frontend
-            environment: dev
-            k8s:io.kubernetes.pod.namespace: dev-frontend
+            io.kubernetes.pod.namespace: dev-frontend
       toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
+        - ports:
+            - { port: "80", protocol: TCP }
 ---
-# === test ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-2-frontend-egress, namespace: test-frontend }
+metadata:
+  name: np-2-frontend-to-api
+  namespace: test-api
 spec:
-  description: "test-frontend → test-api TCP/80"
   endpointSelector:
-    matchLabels: { app: frontend, environment: test }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: api
-            environment: test
-            k8s:io.kubernetes.pod.namespace: test-api
-      toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-2-api-ingress, namespace: test-api }
-spec:
-  description: "test-api ← test-frontend TCP/80"
-  endpointSelector:
-    matchLabels: { app: api, environment: test }
+    matchLabels:
+      app: api
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: frontend
-            environment: test
-            k8s:io.kubernetes.pod.namespace: test-frontend
+            io.kubernetes.pod.namespace: test-frontend
       toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
+        - ports:
+            - { port: "80", protocol: TCP }
 ---
-# === prod ===
-apiVersion: cilium.io/v2
+apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
-metadata: { name: np-2-frontend-egress, namespace: prod-frontend }
+metadata:
+  name: np-2-frontend-to-api
+  namespace: prod-api
 spec:
-  description: "prod-frontend → prod-api TCP/80"
   endpointSelector:
-    matchLabels: { app: frontend, environment: prod }
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            app: api
-            environment: prod
-            k8s:io.kubernetes.pod.namespace: prod-api
-      toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata: { name: np-2-api-ingress, namespace: prod-api }
-spec:
-  description: "prod-api ← prod-frontend TCP/80"
-  endpointSelector:
-    matchLabels: { app: api, environment: prod }
+    matchLabels:
+      app: api
   ingress:
     - fromEndpoints:
         - matchLabels:
             app: frontend
-            environment: prod
-            k8s:io.kubernetes.pod.namespace: prod-frontend
+            io.kubernetes.pod.namespace: prod-frontend
       toPorts:
-        - ports: [{ port: "80", protocol: TCP }]
+        - ports:
+            - { port: "80", protocol: TCP }
+---
+# Egress permits for the frontend side (default-deny means frontend can't egress otherwise)
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: np-2-frontend-egress-api
+  namespace: dev-frontend
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: api
+            io.kubernetes.pod.namespace: dev-api
+      toPorts:
+        - ports:
+            - { port: "80", protocol: TCP }
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: np-2-frontend-egress-api
+  namespace: test-frontend
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: api
+            io.kubernetes.pod.namespace: test-api
+      toPorts:
+        - ports:
+            - { port: "80", protocol: TCP }
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: np-2-frontend-egress-api
+  namespace: prod-frontend
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: api
+            io.kubernetes.pod.namespace: prod-api
+      toPorts:
+        - ports:
+            - { port: "80", protocol: TCP }

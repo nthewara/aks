@@ -1,18 +1,47 @@
-# NP-1 — Default deny ingress + egress in every lab namespace.
-#
-# Cilium's `enableDefaultDeny` (introduced in 1.14) is the cleanest way to
-# turn a namespace/endpoint into deny-by-default without having to ship a
-# rule that "selects but allows nothing". Allow-policies (NP-2..NP-5) then
-# poke the holes we want.
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: np-1-default-deny
-spec:
-  description: "NP-1 default-deny ingress+egress for purpose=lab namespaces"
-  endpointSelector:
-    matchLabels:
-      k8s:io.kubernetes.pod.namespace.labels.purpose: lab
-  enableDefaultDeny:
-    ingress: true
-    egress: true
+# NP-1: Default-deny ingress + egress in every lab namespace.
+# Using standard NetworkPolicy (Cilium honours it). One manifest per ns.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: dev-frontend }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: dev-api }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: dev-data }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: test-frontend }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: test-api }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: test-data }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: prod-frontend }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: prod-api }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: prod-data }
+spec: { podSelector: {}, policyTypes: [ Ingress, Egress ] }
