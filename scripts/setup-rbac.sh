@@ -31,21 +31,24 @@ assign "$AKS_OPS_ADMINS_OID" "Azure Kubernetes Service RBAC Cluster Admin" "$CLU
 assign "$AKS_OPS_ADMINS_OID" "Azure Kubernetes Service Cluster Admin Role" "$CLUSTER_ID"
 
 # app admins: cluster User Role for kubeconfig + RBAC Reader per namespace
-declare -A NS_MAP=(
-  ["AKS_APP_ADMINS_FRONTEND_NONPROD_OID"]="dev-frontend test-frontend"
-  ["AKS_APP_ADMINS_FRONTEND_PROD_OID"]="prod-frontend"
-  ["AKS_APP_ADMINS_API_NONPROD_OID"]="dev-api test-api"
-  ["AKS_APP_ADMINS_API_PROD_OID"]="prod-api"
-  ["AKS_APP_ADMINS_DATA_NONPROD_OID"]="dev-data test-data"
-  ["AKS_APP_ADMINS_DATA_PROD_OID"]="prod-data"
+# (parallel arrays — works on bash 3.2)
+VARS=(
+  "AKS_APP_ADMINS_FRONTEND_NONPROD_OID|dev-frontend test-frontend"
+  "AKS_APP_ADMINS_FRONTEND_PROD_OID|prod-frontend"
+  "AKS_APP_ADMINS_API_NONPROD_OID|dev-api test-api"
+  "AKS_APP_ADMINS_API_PROD_OID|prod-api"
+  "AKS_APP_ADMINS_DATA_NONPROD_OID|dev-data test-data"
+  "AKS_APP_ADMINS_DATA_PROD_OID|prod-data"
 )
 
-for var in "${!NS_MAP[@]}"; do
-  oid="${!var:-}"
+for entry in "${VARS[@]}"; do
+  var="${entry%%|*}"
+  nslist="${entry#*|}"
+  oid="$(eval echo \"\${$var:-}\")"
   [[ -z "$oid" ]] && { echo "skip $var (no OID)"; continue; }
   echo "→ $var ($oid)"
   assign "$oid" "Azure Kubernetes Service Cluster User Role" "$CLUSTER_ID"
-  for ns in ${NS_MAP[$var]}; do
+  for ns in $nslist; do
     assign "$oid" "Azure Kubernetes Service RBAC Reader" "${CLUSTER_ID}/namespaces/${ns}"
   done
 done
