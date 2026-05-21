@@ -26,6 +26,18 @@ See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for diagrams.
 
 **Resource group:** `aks-lab-b4b1` (Australia East) — see lab tracker for current cost / status.
 
+## Architecture
+
+![Architecture](docs/architecture.png)
+
+The lab is organised as three cooperating planes:
+
+- **Azure plane** — the subscription / resource group / VNet hosting the AKS control plane (`akslab-ygf2p-aks`, K8s 1.34, Azure CNI Overlay + Cilium dataplane) wired into Log Analytics workspace `akslab-ygf2p-law`.
+- **Identity plane** — AKS-managed Entra ID with **7 Entra groups** (`aks-ops-admins` + 6 × `aks-app-admins-<app>-<env>`) mapped through **Azure RBAC for Kubernetes Authorization** to either cluster scope (ops) or per-namespace scope (app admins). The K8s API server delegates authz decisions to Azure RBAC using the caller's Entra OID.
+- **Cluster plane** — 2 × `Standard_D4s_v5` nodes running the Cilium eBPF dataplane, which enforces **NP-1..NP-5** across the 3 × 3 namespace grid (envs `dev|test|prod` × tiers `frontend|api|data`). NP-1 default-denies everything; NP-2/NP-3 allow `frontend→api` and `api→data` within the same env; NP-4 blocks any cross-env traffic; NP-5 permits DNS egress to `kube-system`.
+
+Editable source: [`docs/architecture.drawio`](docs/architecture.drawio) (SVG also exported at [`docs/architecture.svg`](docs/architecture.svg)).
+
 ## Quick start
 
 ```bash

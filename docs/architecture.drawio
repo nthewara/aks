@@ -1,0 +1,262 @@
+<mxfile host="app.diagrams.net" agent="openclaw-cloudagent" version="24.0.0">
+  <diagram id="aks-cilium-rbac" name="AKS Cilium + RBAC">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title" value="AKS Lab — Cilium Network Policies + Entra RBAC&#10;RG: aks-lab-b4b1 • Cluster: akslab-ygf2p-aks • Region: australiaeast" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1620" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== AZURE PLANE ===================== -->
+        <mxCell id="azure-plane" value="Azure Plane" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E6F2FB;strokeColor=#0078D4;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="780" height="320" as="geometry" />
+        </mxCell>
+
+        <mxCell id="subscription" value="Subscription&#10;ME-MngEnvMCAP504427" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rg" value="Resource Group&#10;aks-lab-b4b1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="240" y="110" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vnet" value="VNet + Subnet&#10;(Azure CNI Overlay)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0078D4;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="110" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="law" value="Log Analytics&#10;akslab-ygf2p-law" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#B89200;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="110" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="aks-ctrl" value="AKS Control Plane&#10;akslab-ygf2p-aks • K8s 1.34&#10;Managed Entra • Azure RBAC for K8s authz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4E8FB;strokeColor=#0078D4;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="200" width="340" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="apiserver" value="Kubernetes API Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;strokeColor=#0078D4;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="295" width="260" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Azure plane edges -->
+        <mxCell id="e-sub-rg" style="endArrow=none;html=1;strokeColor=#0078D4;" edge="1" parent="1" source="subscription" target="rg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rg-vnet" style="endArrow=none;html=1;strokeColor=#0078D4;" edge="1" parent="1" source="rg" target="vnet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rg-aks" style="endArrow=none;html=1;strokeColor=#0078D4;" edge="1" parent="1" source="rg" target="aks-ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-aks-law" style="endArrow=classic;html=1;strokeColor=#B89200;dashed=1;" edge="1" parent="1" source="aks-ctrl" target="law">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="680" y="235" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-aks-api" style="endArrow=none;html=1;strokeColor=#0078D4;" edge="1" parent="1" source="aks-ctrl" target="apiserver">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== IDENTITY PLANE ===================== -->
+        <mxCell id="id-plane" value="Identity Plane" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3E8FB;strokeColor=#6F42C1;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="840" y="70" width="820" height="320" as="geometry" />
+        </mxCell>
+
+        <mxCell id="entra" value="Microsoft Entra ID" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6F42C1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="110" width="160" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="g-ops" value="aks-ops-admins" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="165" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="g-fe-np" value="app-admins-frontend-nonprod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="200" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="g-fe-p" value="app-admins-frontend-prod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="232" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="g-api-np" value="app-admins-api-nonprod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="264" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="g-api-p" value="app-admins-api-prod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="296" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="g-data-np" value="app-admins-data-nonprod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="328" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="g-data-p" value="app-admins-data-prod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E9D5F5;strokeColor=#6F42C1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="860" y="360" width="180" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- RBAC roles column -->
+        <mxCell id="rbac-cluster" value="RBAC Cluster Admin&#10;(cluster scope)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#B89200;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="160" width="180" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="rbac-writer" value="RBAC Writer × 6&#10;(namespace scope, per app/env)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#B89200;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="240" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="apiserver-id" value="K8s API Server&#10;(Azure RBAC authz)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;strokeColor=#0078D4;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="200" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Identity edges -->
+        <mxCell id="e-entra-ops" style="endArrow=none;html=1;strokeColor=#6F42C1;" edge="1" parent="1" source="entra" target="g-ops">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-ops-cluster" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-ops" target="rbac-cluster">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-fe-np-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-fe-np" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-fe-p-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-fe-p" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-api-np-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-api-np" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-api-p-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-api-p" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-data-np-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-data-np" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-data-p-w" style="endArrow=classic;html=1;strokeColor=#B89200;" edge="1" parent="1" source="g-data-p" target="rbac-writer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rbac-api1" style="endArrow=classic;html=1;strokeColor=#0078D4;fontSize=10;" edge="1" parent="1" source="rbac-cluster" target="apiserver-id">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rbac-api2" style="endArrow=classic;html=1;strokeColor=#0078D4;fontSize=10;" edge="1" parent="1" source="rbac-writer" target="apiserver-id">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== CLUSTER PLANE ===================== -->
+        <mxCell id="cluster-plane" value="Cluster Plane — Cilium Dataplane" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F8EE;strokeColor=#2E7D32;fontSize=14;fontStyle=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="1620" height="760" as="geometry" />
+        </mxCell>
+
+        <!-- Nodes + Cilium band -->
+        <mxCell id="node1" value="Node 1&#10;Standard_D4s_v5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="450" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="node2" value="Node 2&#10;Standard_D4s_v5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="450" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cilium-band" value="Cilium eBPF Dataplane — enforces CiliumNetworkPolicy NP-1..NP-5 on every endpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="515" width="1540" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- 3x3 namespace grid -->
+        <!-- Headers -->
+        <mxCell id="hdr-fe" value="frontend (nginx)" style="text;html=1;align=center;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="240" y="580" width="380" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr-api" value="api (httpbin) :80" style="text;html=1;align=center;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="700" y="580" width="380" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr-data" value="data (redis) :6379" style="text;html=1;align=center;fontSize=12;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="580" width="380" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Row labels -->
+        <mxCell id="row-dev" value="dev" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=#FFE0B2;strokeColor=#E65100;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="640" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="row-test" value="test" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=#FFF59D;strokeColor=#F9A825;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="760" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="row-prod" value="prod" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fillColor=#FFCDD2;strokeColor=#C62828;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="880" width="100" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- 9 namespace cells -->
+        <!-- dev row -->
+        <mxCell id="ns-dev-fe" value="dev-frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="640" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-dev-api" value="dev-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="640" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-dev-data" value="dev-data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="640" width="340" height="80" as="geometry" />
+        </mxCell>
+        <!-- test row -->
+        <mxCell id="ns-test-fe" value="test-frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="760" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-test-api" value="test-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="760" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-test-data" value="test-data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F9A825;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="760" width="340" height="80" as="geometry" />
+        </mxCell>
+        <!-- prod row -->
+        <mxCell id="ns-prod-fe" value="prod-frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="260" y="880" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-prod-api" value="prod-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="720" y="880" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ns-prod-data" value="prod-data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="880" width="340" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Intra-env allowed flows (NP-2 frontend->api, NP-3 api->data) -->
+        <mxCell id="f-dev-fe-api" value="NP-2  ✓ TCP/80" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-dev-fe" target="ns-dev-api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f-dev-api-data" value="NP-3  ✓ TCP/6379" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-dev-api" target="ns-dev-data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f-test-fe-api" value="NP-2  ✓ TCP/80" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-test-fe" target="ns-test-api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f-test-api-data" value="NP-3  ✓ TCP/6379" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-test-api" target="ns-test-data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f-prod-fe-api" value="NP-2  ✓ TCP/80" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-prod-fe" target="ns-prod-api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f-prod-api-data" value="NP-3  ✓ TCP/6379" style="endArrow=classic;html=1;strokeColor=#2E7D32;strokeWidth=2;fontSize=10;fontStyle=1;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ns-prod-api" target="ns-prod-data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Cross-env DENY (NP-4) -->
+        <mxCell id="deny-dev-prod" value="NP-4  ✗ cross-env DENY" style="endArrow=classic;html=1;strokeColor=#C62828;strokeWidth=3;dashed=1;fontSize=11;fontStyle=1;labelBackgroundColor=#FFFFFF;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="ns-dev-api" target="ns-prod-api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="805" y="990" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="deny-prod-dev" value="NP-4  ✗ cross-env DENY" style="endArrow=classic;html=1;strokeColor=#C62828;strokeWidth=3;dashed=1;fontSize=11;fontStyle=1;labelBackgroundColor=#FFFFFF;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="ns-prod-data" target="ns-dev-data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1435" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- NP legend on right -->
+        <mxCell id="np-legend" value="CiliumNetworkPolicies&#10;&#10;NP-1  default-deny (ingress + egress) — all 9 ns&#10;NP-2  frontend → api, TCP/80, same env only&#10;NP-3  api → data, TCP/6379, same env only&#10;NP-4  cross-env DENY (dev ⇄ test ⇄ prod)&#10;NP-5  DNS egress → kube-system kube-dns 53" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=11;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1000" width="700" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Identity legend -->
+        <mxCell id="id-legend" value="Identity / RBAC (managed Entra)&#10;&#10;• 1× aks-ops-admins → RBAC Cluster Admin + Cluster Admin Role (cluster)&#10;• 6× app-admins-{frontend|api|data}-{nonprod|prod} → RBAC Writer (ns scope)&#10;• All app-admin groups also get Cluster User Role (for az aks get-credentials)&#10;• Authz path: kubectl → API server → Azure RBAC check via Entra OID&#10;• Validated: 11/11 NetworkPolicy tests • 124/124 RBAC tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6F42C1;fontSize=11;align=left;verticalAlign=top;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1000" width="800" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Connector: API server (Azure plane) -> Cilium band -->
+        <mxCell id="e-api-cluster" style="endArrow=classic;html=1;strokeColor=#0078D4;strokeWidth=2;dashed=1;" edge="1" parent="1" source="apiserver" target="cilium-band">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
