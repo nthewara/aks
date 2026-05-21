@@ -1,0 +1,9 @@
+{
+  "id": "NP-2-dev",
+  "description": "frontend → api allowed (dev)",
+  "expected": "ALLOW",
+  "actual": "ALLOW",
+  "pass": true,
+  "details": "dev-frontend/frontend → api.dev-api.svc.cluster.local:80/http",
+  "timestamp": "2026-05-21T11:55:53Z"
+}

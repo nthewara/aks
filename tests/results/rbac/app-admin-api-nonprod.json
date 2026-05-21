@@ -1,0 +1,25 @@
+{
+  "persona": "app-admin-api-nonprod",
+  "oid": "f1e600dd-90b4-4ae8-a997-6fe242937253",
+  "timestamp": "2026-05-21T12:02:13Z",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {"check":"dev-api:get pods","expected":"yes","actual":"yes","pass":true},
+    {"check":"dev-api:list pods","expected":"yes","actual":"yes","pass":true},
+    {"check":"dev-api:get services","expected":"yes","actual":"yes","pass":true},
+    {"check":"dev-api:list deployments.apps","expected":"yes","actual":"yes","pass":true},
+    {"check":"dev-api:create pods","expected":"no","actual":"no","pass":true},
+    {"check":"test-api:get pods","expected":"yes","actual":"yes","pass":true},
+    {"check":"test-api:list pods","expected":"yes","actual":"yes","pass":true},
+    {"check":"test-api:get services","expected":"yes","actual":"yes","pass":true},
+    {"check":"test-api:list deployments.apps","expected":"yes","actual":"yes","pass":true},
+    {"check":"test-api:create pods","expected":"no","actual":"no","pass":true},
+    {"check":"prod-api:get pods (deny-expected)","expected":"no","actual":"no","pass":true},
+    {"check":"dev-frontend:get pods (deny-expected)","expected":"no","actual":"no","pass":true},
+    {"check":"prod-frontend:get pods (deny-expected)","expected":"no","actual":"no","pass":true},
+    {"check":"dev-data:get pods (deny-expected)","expected":"no","actual":"no","pass":true},
+    {"check":"prod-data:get pods (deny-expected)","expected":"no","actual":"no","pass":true}
+  ]
+}
