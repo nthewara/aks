@@ -1,0 +1,56 @@
+# 9 lab namespaces: dev/test/prod × frontend/api/data
+# Labels drive Cilium NetworkPolicy selectors and RBAC scopes.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev-frontend
+  labels: { environment: dev, app: frontend, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev-api
+  labels: { environment: dev, app: api, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev-data
+  labels: { environment: dev, app: data, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-frontend
+  labels: { environment: test, app: frontend, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-api
+  labels: { environment: test, app: api, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-data
+  labels: { environment: test, app: data, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod-frontend
+  labels: { environment: prod, app: frontend, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod-api
+  labels: { environment: prod, app: api, purpose: lab }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod-data
+  labels: { environment: prod, app: data, purpose: lab }

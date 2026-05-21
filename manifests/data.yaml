@@ -1,0 +1,40 @@
+# Data = redis. Deployed into <env>-data. In-memory, no persistence (lab).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data
+  namespace: __ENV__-data
+  labels: { app: data, environment: __ENV__, purpose: lab }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: data, environment: __ENV__ }
+  template:
+    metadata:
+      labels: { app: data, environment: __ENV__, purpose: lab }
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["--save", "", "--appendonly", "no", "--protected-mode", "no"]
+          ports: [{ containerPort: 6379 }]
+          resources:
+            requests: { cpu: "20m", memory: "32Mi" }
+            limits:   { cpu: "200m", memory: "128Mi" }
+          readinessProbe:
+            tcpSocket: { port: 6379 }
+            initialDelaySeconds: 2
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data
+  namespace: __ENV__-data
+  labels: { app: data, environment: __ENV__, purpose: lab }
+spec:
+  selector: { app: data, environment: __ENV__ }
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
