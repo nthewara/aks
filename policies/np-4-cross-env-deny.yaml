@@ -1,0 +1,41 @@
+# NP-4 — Explicit cross-environment deny (dev ↔ prod).
+#
+# Strictly speaking NP-2/NP-3 already only allow same-env traffic, so
+# default-deny (NP-1) handles dev↔prod. NP-4 ships an *explicit* deny so:
+#   1. The intent is documented in code rather than implicit.
+#   2. Even if someone later writes a sloppy "allow all from app=frontend"
+#      policy, this deny still wins — Cilium evaluates denies before allows.
+#
+# Two policies, one per direction, each scoped to one side of the pair.
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: np-4-deny-prod-from-dev
+spec:
+  description: "prod pods deny ingress from dev pods"
+  endpointSelector:
+    matchLabels:
+      environment: prod
+      purpose: lab
+  ingressDeny:
+    - fromEndpoints:
+        - matchLabels:
+            environment: dev
+            purpose: lab
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: np-4-deny-dev-from-prod
+spec:
+  description: "dev pods deny ingress from prod pods"
+  endpointSelector:
+    matchLabels:
+      environment: dev
+      purpose: lab
+  ingressDeny:
+    - fromEndpoints:
+        - matchLabels:
+            environment: prod
+            purpose: lab
