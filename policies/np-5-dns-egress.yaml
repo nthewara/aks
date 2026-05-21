@@ -1,0 +1,25 @@
+# NP-5 — Allow DNS egress to kube-dns (UDP/53 + TCP/53) from every lab pod.
+#
+# Without this, NP-1's default-deny breaks all name resolution, which
+# breaks everything else. Targets pods in any purpose=lab namespace and
+# allows egress to the kube-dns Service in kube-system. Uses Cilium's
+# `toEndpoints` + DNS L7 visibility (so we can also see queries in hubble
+# if it's installed). For maximum compatibility we keep this L3/L4 only.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: np-5-dns-egress
+spec:
+  description: "Allow DNS egress to kube-dns for purpose=lab pods"
+  endpointSelector:
+    matchLabels:
+      k8s:io.kubernetes.pod.namespace.labels.purpose: lab
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - { port: "53", protocol: UDP }
+            - { port: "53", protocol: TCP }
