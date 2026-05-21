@@ -1,0 +1,4 @@
+.DS_Store
+*.kubeconfig
+kubeconfig*
+tests/results/local-*
