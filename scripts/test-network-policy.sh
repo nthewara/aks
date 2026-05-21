@@ -18,31 +18,34 @@ mkdir -p "$OUT_DIR"
 CURL_IMG="curlimages/curl:8.10.1"
 TIMEOUT=5
 
-# probe <id> <source-ns> <target-host> <port> <protocol: http|tcp|dns>
+# probe <id> <source-ns> <source-app-label> <target-host> <port> <protocol: http|tcp|dns>
 # Echoes one of: ALLOW | DENY | ERROR
 # - ALLOW = traffic reached the target (200 or open TCP or DNS answer)
 # - DENY  = expected NetworkPolicy block (timeout or refused)
 probe() {
-  local sid="$1" sns="$2" target="$3" port="$4" proto="$5"
-  local podname="np-probe-${sid}-$RANDOM"
+  local sid="$1" sns="$2" sapp="$3" target="$4" port="$5" proto="$6"
+  local podname="np-probe-$(echo $sid | tr 'A-Z' 'a-z')-$RANDOM"
   local cmd
   case "$proto" in
     http)
-      cmd="curl -sS -o /dev/null -w '%{http_code}\n' --max-time $TIMEOUT http://${target}:${port}/"
+      cmd="sleep 4; curl -sS -o /dev/null -w '%{http_code}\n' --max-time $TIMEOUT http://${target}:${port}/"
       ;;
     tcp)
-      # nc isn't in curlimages/curl; use bash /dev/tcp instead via a busybox-ish env.
-      # Fallback to curl telnet:// which does a raw TCP connect.
-      cmd="curl -sS --max-time $TIMEOUT -o /dev/null telnet://${target}:${port}"
+      # nc -z does a connect-only probe. Works for silent protocols (Redis, etc).
+      # Exit 0 on success, non-zero on refuse/timeout. We print PROBE-OPEN / PROBE-CLOSED so
+      # the classifier doesn't depend on the broader nc stderr text.
+      cmd="sleep 4; if nc -zv -w $TIMEOUT ${target} ${port} 2>&1 | grep -q open; then echo PROBE-OPEN; else echo PROBE-CLOSED; fi"
       ;;
     dns)
-      cmd="curl -sS --max-time $TIMEOUT -o /dev/null https://${target} || echo DNS-FAILED"
+      # nslookup uses DNS (UDP 53). Success means name resolves. Independent of egress to the target.
+      cmd="sleep 4; nslookup ${target} 2>&1 | head -10"
       ;;
   esac
   local raw rc
   raw=$(kubectl run "$podname" \
         --rm -i --restart=Never --quiet \
         --image="$CURL_IMG" \
+        --labels="app=${sapp}" \
         -n "$sns" \
         --command -- sh -c "$cmd" 2>&1 || true)
   # `kubectl run` exit code reflects the container's, but the wrapper masks
@@ -52,20 +55,16 @@ probe() {
       if echo "$raw" | grep -Eq '^[1-5][0-9][0-9]$'; then echo ALLOW; else echo DENY; fi
       ;;
     tcp)
-      # telnet:// returns 0 on connect and non-empty/empty output on failure.
-      # If output contains "Connection timed out" / "Could not resolve" / "Failed to connect" → DENY.
-      if echo "$raw" | grep -qiE 'timed out|could not resolve|failed to connect|Couldn'\''t connect'; then
-        echo DENY
-      else
+      # PROBE-OPEN = connect succeeded → ALLOW; anything else → DENY.
+      if echo "$raw" | grep -q PROBE-OPEN; then
         echo ALLOW
+      else
+        echo DENY
       fi
       ;;
     dns)
-      if echo "$raw" | grep -qi "could not resolve\|dns-failed\|name or service not known"; then
-        echo DENY
-      else
-        echo ALLOW
-      fi
+      # Successful nslookup contains "Address:" lines for the resolved IP(s).
+      if echo "$raw" | grep -qE "Address[: ]+[0-9]+\." ; then echo ALLOW; else echo DENY; fi
       ;;
   esac
 }
@@ -91,21 +90,21 @@ JSON
 CASES=(
   # NP-1: with all policies applied, an *unrelated* pair (frontend → data)
   # has no allow rule, so it must be denied.
-  "NP-1|default-deny: dev-frontend → dev-data:6379 has no allow → DENY|dev-frontend|data.dev-data.svc.cluster.local|6379|tcp|DENY"
+  "NP-1|default-deny: dev-frontend → dev-data:6379 has no allow → DENY|dev-frontend|frontend|data.dev-data.svc.cluster.local|6379|tcp|DENY"
   # NP-2: allowed same-env frontend → api on 80.
-  "NP-2-dev|frontend → api allowed (dev)|dev-frontend|api.dev-api.svc.cluster.local|80|http|ALLOW"
-  "NP-2-test|frontend → api allowed (test)|test-frontend|api.test-api.svc.cluster.local|80|http|ALLOW"
-  "NP-2-prod|frontend → api allowed (prod)|prod-frontend|api.prod-api.svc.cluster.local|80|http|ALLOW"
+  "NP-2-dev|frontend → api allowed (dev)|dev-frontend|frontend|api.dev-api.svc.cluster.local|80|http|ALLOW"
+  "NP-2-test|frontend → api allowed (test)|test-frontend|frontend|api.test-api.svc.cluster.local|80|http|ALLOW"
+  "NP-2-prod|frontend → api allowed (prod)|prod-frontend|frontend|api.prod-api.svc.cluster.local|80|http|ALLOW"
   # NP-3: allowed same-env api → data on 6379.
-  "NP-3-dev|api → data allowed (dev)|dev-api|data.dev-data.svc.cluster.local|6379|tcp|ALLOW"
-  "NP-3-test|api → data allowed (test)|test-api|data.test-data.svc.cluster.local|6379|tcp|ALLOW"
-  "NP-3-prod|api → data allowed (prod)|prod-api|data.prod-data.svc.cluster.local|6379|tcp|ALLOW"
+  "NP-3-dev|api → data allowed (dev)|dev-api|api|data.dev-data.svc.cluster.local|6379|tcp|ALLOW"
+  "NP-3-test|api → data allowed (test)|test-api|api|data.test-data.svc.cluster.local|6379|tcp|ALLOW"
+  "NP-3-prod|api → data allowed (prod)|prod-api|api|data.prod-data.svc.cluster.local|6379|tcp|ALLOW"
   # NP-4: cross-env deny — dev-frontend → prod-api must be blocked.
-  "NP-4-dev-to-prod|cross-env deny: dev-frontend → prod-api|dev-frontend|api.prod-api.svc.cluster.local|80|http|DENY"
-  "NP-4-prod-to-dev|cross-env deny: prod-frontend → dev-api|prod-frontend|api.dev-api.svc.cluster.local|80|http|DENY"
+  "NP-4-dev-to-prod|cross-env deny: dev-frontend → prod-api|dev-frontend|frontend|api.prod-api.svc.cluster.local|80|http|DENY"
+  "NP-4-prod-to-dev|cross-env deny: prod-frontend → dev-api|prod-frontend|frontend|api.dev-api.svc.cluster.local|80|http|DENY"
   # NP-5: DNS should resolve from any lab pod.
-  "NP-5-dev|DNS works in dev-frontend|dev-frontend|kubernetes.default.svc.cluster.local|443|dns|ALLOW"
-  "NP-5-prod|DNS works in prod-data|prod-data|kubernetes.default.svc.cluster.local|443|dns|ALLOW"
+  "NP-5-dev|DNS works in dev-frontend|dev-frontend|frontend|kubernetes.default.svc.cluster.local|443|dns|ALLOW"
+  "NP-5-prod|DNS works in prod-data|prod-data|data|kubernetes.default.svc.cluster.local|443|dns|ALLOW"
 )
 
 SUMMARY="$OUT_DIR/SUMMARY.md"
@@ -120,10 +119,10 @@ SUMMARY="$OUT_DIR/SUMMARY.md"
 
 PASS=0; FAIL=0
 for c in "${CASES[@]}"; do
-  IFS='|' read -r id desc sns target port proto expected <<<"$c"
-  echo "→ $id ($sns → $target:$port/$proto, expect $expected)"
-  actual=$(probe "$id" "$sns" "$target" "$port" "$proto")
-  details="$sns → $target:$port/$proto"
+  IFS='|' read -r id desc sns sapp target port proto expected <<<"$c"
+  echo "→ $id ($sns/$sapp → $target:$port/$proto, expect $expected)"
+  actual=$(probe "$id" "$sns" "$sapp" "$target" "$port" "$proto")
+  details="$sns/$sapp → $target:$port/$proto"
   write_result "$id" "$desc" "$expected" "$actual" "$details"
 
   if [[ "$actual" == "$expected" ]]; then

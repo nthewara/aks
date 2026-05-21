@@ -37,14 +37,27 @@ PERSONAS=(
   "app-admin-data-prod|$AKS_APP_ADMINS_DATA_PROD_OID|prod-data|dev-data test-data dev-api prod-api dev-frontend prod-frontend"
 )
 
-# Single can-i check → "yes"|"no" (always exits 0 via `|| true`).
+# Single can-i check via SubjectAccessReview API (kubectl auth can-i lacks --as-extra,
+# which Azure RBAC for Kubernetes requires for OID propagation).
+# Echoes "yes" | "no".
+# `resource` may be in "resource.group" form (e.g. "deployments.apps"); we split it.
 check() {
   local oid="$1"; local verb="$2"; local resource="$3"; local ns="${4:-}"
-  local nsflag=()
-  [[ -n "$ns" ]] && nsflag=(-n "$ns")
-  kubectl auth can-i "$verb" "$resource" \
-    --as="$oid" --as-group="$oid" \
-    "${nsflag[@]}" 2>/dev/null || true
+  local res="$resource" grp=""
+  if [[ "$resource" == *.* ]]; then
+    res="${resource%%.*}"
+    grp="${resource#*.}"
+  fi
+  local ns_field=""
+  [[ -n "$ns" ]] && ns_field="\"namespace\":\"$ns\","
+  local grp_field=""
+  [[ -n "$grp" ]] && grp_field="\"group\":\"$grp\","
+  # User-name = OID keeps Azure RBAC's cache keyed per persona; otherwise a shared
+  # user string yields stale allow/deny across personas.
+  local body="{\"kind\":\"SubjectAccessReview\",\"apiVersion\":\"authorization.k8s.io/v1\",\"spec\":{\"user\":\"$oid\",\"groups\":[\"$oid\",\"system:authenticated\"],\"extra\":{\"oid\":[\"$oid\"]},\"resourceAttributes\":{${ns_field}${grp_field}\"verb\":\"$verb\",\"resource\":\"$res\"}}}"
+  local resp
+  resp=$(echo "$body" | kubectl create --raw /apis/authorization.k8s.io/v1/subjectaccessreviews -f - 2>/dev/null || true)
+  if echo "$resp" | grep -q '"allowed":true'; then echo yes; else echo no; fi
 }
 
 emit_json_entry() {
